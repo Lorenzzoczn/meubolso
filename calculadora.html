@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Calculadora Financeira Completa</title>
+<style>
+  /* Reset básico */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    padding: 20px;
+    color: #f0f0f0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 600px;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #2a2a72;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    user-select: none;
+  }
+  h2 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-bottom: 2px solid #4a4aac;
+    padding-bottom: 4px;
+    user-select: none;
+  }
+  label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    gap: 8px;
+    user-select: none;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #232323;
+    outline: none;
+    transition: box-shadow 0.25s ease;
+  }
+  input[type="number"]:focus {
+    box-shadow: 0 0 8px #7b68ee;
+  }
+  /* Layout em grid para a área de gastos */
+  .expenses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+  /* Ícones SVG */
+  .icon {
+    width: 18px;
+    height: 18px;
+    fill: #ddd;
+    flex-shrink: 0;
+  }
+  /* Tabela resumo */
+  table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    font-weight: 600;
+    user-select: none;
+  }
+  th, td {
+    padding: 12px 15px;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  thead th {
+    background: #4a4aac;
+    color: #ddd;
+    letter-spacing: 0.06em;
+  }
+  tbody tr {
+    background: #3b3b8a;
+    transition: background 0.2s ease;
+  }
+  tbody tr:hover {
+    background: #5757bb;
+  }
+  tbody td {
+    color: #e0e0e0;
+  }
+  .value-positive {
+    color: #9ae68a;
+    font-weight: 700;
+  }
+  .value-negative {
+    color: #ef5656;
+    font-weight: 700;
+  }
+  /* Aba de navegação simples */
+  .tabs {
+    display: flex;
+    margin-top: 24px;
+    gap: 12px;
+    user-select: none;
+  }
+  .tab {
+    flex: 1;
+    background: #3b3b8a;
+    padding: 12px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: #ddd;
+  }
+  .tab.active {
+    background: #667eea;
+    color: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.7);
+  }
+  /* Seções ocultáveis */
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  /* Responsivo para telas pequenas */
+  @media (max-width: 400px) {
+    body {
+      padding: 15px 12px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 100%;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 1.5rem;
+    }
+    h2 {
+      font-size: 1.15rem;
+    }
+    input[type="number"] {
+      font-size: 1rem;
+      padding: 9px 10px;
+    }
+    label {
+      font-size: 0.85rem;
+    }
+    .tabs {
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+  /* Scroll horizontal na tabela dos meses se precisar */
+  .month-table-wrapper {
+    overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Calculadora Financeira Completa</h1>
+
+    <nav class="tabs" role="tablist" aria-label="Navegação das seções">
+      <button class="tab active" role="tab" aria-selected="true" aria-controls="inputSection" id="tabInput">Entrada</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="monthlyViewSection" id="tabMonthly">Gastos Mensais</button>
+    </nav>
+
+    <section id="inputSection" class="tab-content active" tabindex="0" aria-labelledby="tabInput">
+      <section aria-label="Entrada de rendimentos mensais" style="margin-top:16px;">
+        <label for="incomeInput">Quanto você ganha por mês (R$):</label>
+        <input type="number" id="incomeInput" name="income" placeholder="Ex: 3500" min="0" step="0.01" aria-required="true" />
+      </section>
+
+      <section aria-label="Entrada de gastos mensais detalhados" style="margin-top:24px;">
+        <h2>Gastos Mensais Detalhados</h2>
+        <form id="expenseForm" aria-describedby="expenseDesc" autocomplete="off" aria-label="Formulário de gastos detalhados">
+          <p id="expenseDesc" style="font-size:0.85rem; color:#ccc; margin-bottom:12px;">Insira os valores de cada gasto para melhor controle.</p>
+          <div class="expenses">
+            <div>
+              <label for="rentInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 3l7 6v12h-5v-6H10v6H5V9l7-6zM12 5.69L7 9.12v8.88h3v-6h4v6h3v-8.88l-5-3.43z"/>
+                </svg>
+                Aluguel
+              </label>
+              <input type="number" id="rentInput" name="rent" placeholder="Ex: 1200" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="waterInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/>
+                </svg>
+                Água
+              </label>
+              <input type="number" id="waterInput" name="water" placeholder="Ex: 80" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="electricityInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M7 2L3 14h4l-1 8 13-12h-5l3-8z"/>
+                </svg>
+                Luz
+              </label>
+              <input type="number" id="electricityInput" name="electricity" placeholder="Ex: 120" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="internetInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 12a8 8 0 0 1 8-8v2a6 6 0 0 0-6 6H4zm9-7v2a5 5 0 0 1 5 5h2a7 7 0 0 0-7-7zm0 6v2a2 2 0 0 1 2 2h2a4 4 0 0 0-4-4zm-4 0a4 4 0 0 0-4 4h2a2 2 0 0 1 2-2zM12 20c-4.418 0-8-3.582-8-8H2a10 10 0 0 0 10 10v-2z"/>
+                </svg>
+                Internet
+              </label>
+              <input type="number" id="internetInput" name="internet" placeholder="Ex: 100" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="foodInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 2a3 3 0 0 1 3 3v9a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3zm-1 13h2v5h-2v-5z"/>
+                </svg>
+                Comida
+              </label>
+              <input type="number" id="foodInput" name="food" placeholder="Ex: 600" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="fuelInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M6 2h8a1 1 0 0 1 1 1v16a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V3a1 1 0 0 1 1-1zM9 4v12h2V4H9z"/>
+                </svg>
+                Gasolina
+              </label>
+              <input type="number" id="fuelInput" name="fuel" placeholder="Ex: 250" min="0" step="0.01" />
+            </div>
+            <div>
+              <label for="creditCardInput">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" >
+                  <path d="M20 4H4a2 2 0 0 0-2 2v3h20V6a2 2 0 0 0-2-2zm0 6H2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8zM6 18a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>
+                Cartão de Crédito
+              </label>
+              <input type="number" id="creditCardInput" name="creditCard" placeholder="Ex: 500" min="0" step="0.01" />
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section aria-label="Meta financeira" style="margin-top:24px;">
+        <h2>Meta Financeira</h2>
+        <label for="goalAmountInput">Valor da meta (R$):</label>
+        <input type="number" id="goalAmountInput" name="goalAmount" placeholder="Ex: 5000" min="0" step="0.01" aria-required="true"/>
+
+        <label for="goalMonthsInput" style="margin-top:12px;">Prazo para atingir (meses):</label>
+        <input type="number" id="goalMonthsInput" name="goalMonths" placeholder="Ex: 12" min="1" step="1" aria-required="true"/>
+
+        <p style="margin-top:12px; font-weight: 700; font-size:1.1rem;">
+          Você precisa guardar por mês: <span id="monthlySaveValue">R$ 0,00</span>
+        </p>
+      </section>
+
+      <section aria-label="Resumo financeiro" style="margin-top:24px;">
+        <h2>Resumo Mensal</h2>
+        <table aria-live="polite" aria-label="Tabela de resumo financeiro mensal">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ganho Mensal</td>
+              <td id="incomeValue">R$ 0,00</td>
+            </tr>
+            <tr>
+              <td>Gasto Total</td>
+              <td id="expenseValue">R$ 0,00</td>
+            </tr>
+            <tr>
+              <td>Saldo</td>
+              <td id="balanceValue" class="value-positive">R$ 0,00</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section id="monthlyViewSection" class="tab-content" tabindex="0" aria-labelledby="tabMonthly" style="margin-top:24px;">
+      <h2>Visualização Mensal dos Gastos (Ano 2025)</h2>
+      <label for="selectMonth">Selecione o mês:</label>
+      <select id="selectMonth" aria-label="Selecionar mês para visualizar gastos">
+        <option value="1">Janeiro</option>
+        <option value="2">Fevereiro</option>
+        <option value="3">Março</option>
+        <option value="4">Abril</option>
+        <option value="5">Maio</option>
+        <option value="6">Junho</option>
+        <option value="7">Julho</option>
+        <option value="8">Agosto</option>
+        <option value="9">Setembro</option>
+        <option value="10">Outubro</option>
+        <option value="11">Novembro</option>
+        <option value="12">Dezembro</option>
+      </select>
+      <div class="month-table-wrapper" style="margin-top:16px;">
+        <table aria-live="polite" aria-label="Tabela detalhada de gastos do mês selecionado">
+          <thead>
+            <tr>
+              <th>Tipo de Gasto</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="monthExpensesTableBody">
+            <!-- Preenchido via JS -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Total</th>
+              <th id="monthTotalValue">R$ 0,00</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Formata valor para reais
+    function formatBRL(value) {
+      return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Obter gastos atuais do formulário
+    function getCurrentExpenses() {
+      return {
+        rent: parseFloat(document.getElementById('rentInput').value) || 0,
+        water: parseFloat(document.getElementById('waterInput').value) || 0,
+        electricity: parseFloat(document.getElementById('electricityInput').value) || 0,
+        internet: parseFloat(document.getElementById('internetInput').value) || 0,
+        food: parseFloat(document.getElementById('foodInput').value) || 0,
+        fuel: parseFloat(document.getElementById('fuelInput').value) || 0,
+        creditCard: parseFloat(document.getElementById('creditCardInput').value) || 0,
+      };
+    }
+
+    // Calcula soma total dos gastos, subtraindo a meta mensal
+    function calculateTotalExpenses(goalAmount, goalMonths, expensesObj) {
+      let total = 0;
+      for (const key in expensesObj) {
+        total += expensesObj[key];
+      }
+      let monthlyGoal = 0;
+      if (!isNaN(goalAmount) && goalAmount > 0 && !isNaN(goalMonths) && goalMonths > 0) {
+        monthlyGoal = goalAmount / goalMonths;
+      }
+      // A meta financeira deve ser descontada dos gastos
+      const adjustedTotal = total - monthlyGoal;
+      return adjustedTotal >= 0 ? adjustedTotal : 0;
+    }
+
+    // Atualiza os cálculos da página e salva os gastos no mês atual
+    function updateCalculations(save = true) {
+      const income = parseFloat(document.getElementById('incomeInput').value);
+      const goalAmount = parseFloat(document.getElementById('goalAmountInput').value);
+      const goalMonths = parseInt(document.getElementById('goalMonthsInput').value, 10);
+
+      const expensesObj = getCurrentExpenses();
+
+      const totalExpenses = calculateTotalExpenses(goalAmount, goalMonths, expensesObj);
+
+      const monthlySaveElem = document.getElementById('monthlySaveValue');
+      const incomeValueElem = document.getElementById('incomeValue');
+      const expenseValueElem = document.getElementById('expenseValue');
+      const balanceValueElem = document.getElementById('balanceValue');
+
+      const incomeVal = (isNaN(income) || income < 0) ? 0 : income;
+      const expensesVal = (isNaN(totalExpenses) || totalExpenses < 0) ? 0 : totalExpenses;
+
+      incomeValueElem.textContent = formatBRL(incomeVal);
+      expenseValueElem.textContent = formatBRL(expensesVal);
+
+      const balance = incomeVal - expensesVal;
+      balanceValueElem.textContent = formatBRL(balance);
+
+      if (balance >= 0) {
+        balanceValueElem.classList.remove('value-negative');
+        balanceValueElem.classList.add('value-positive');
+      } else {
+        balanceValueElem.classList.remove('value-positive');
+        balanceValueElem.classList.add('value-negative');
+      }
+
+      if (!isNaN(goalAmount) && goalAmount > 0 && !isNaN(goalMonths) && goalMonths > 0) {
+        const neededMonthlySave = goalAmount / goalMonths;
+        monthlySaveElem.textContent = formatBRL(neededMonthlySave);
+        if (balance < neededMonthlySave) {
+          monthlySaveElem.style.color = '#ef5656'; // vermelho
+          monthlySaveElem.title = 'Seu saldo atual é menor que o valor necessário para atingir a meta.';
+        } else {
+          monthlySaveElem.style.color = '#9ae68a'; // verde
+          monthlySaveElem.title = 'Você pode atingir a meta guardando esse valor por mês.';
+        }
+      } else {
+        monthlySaveElem.textContent = formatBRL(0);
+        monthlySaveElem.style.color = '#ddd';
+        monthlySaveElem.title = '';
+      }
+
+      // Salvar dados no localStorage para o mês corrente se save=true
+      if (save) {
+        const now = new Date();
+        const year = 2025; // fixo para o ano solicitado
+        const month = now.getMonth() + 1; // 1 a 12
+        saveMonthlyData(year, month, incomeVal, expensesObj, goalAmount, goalMonths);
+      }
+    }
+
+    // Salva os dados no localStorage no formato {year: {month: {...}}}
+    function saveMonthlyData(year, month, income, expenses, goalAmount, goalMonths) {
+      let data = JSON.parse(localStorage.getItem('financeData')) || {};
+      if (!data[year]) data[year] = {};
+      data[year][month] = {
+        income: income,
+        expenses: expenses,
+        goalAmount: goalAmount,
+        goalMonths: goalMonths
+      };
+      localStorage.setItem('financeData', JSON.stringify(data));
+    }
+
+    // Carrega os dados salvos para um mês específico e preenche a tabela de visualização mensal
+    function loadMonthlyData(year, month) {
+      const tableBody = document.getElementById('monthExpensesTableBody');
+      const monthTotalElem = document.getElementById('monthTotalValue');
+      tableBody.innerHTML = ''; // limpar
+
+      let data = JSON.parse(localStorage.getItem('financeData')) || {};
+      if (data[year] && data[year][month]) {
+        const monthData = data[year][month];
+        const expenses = monthData.expenses || {};
+        let total = 0;
+        // Lista de tipos de gasto padrão para exibir
+        const keys = ['rent', 'water', 'electricity', 'internet', 'food', 'fuel', 'creditCard'];
+        const labels = {
+          rent: 'Aluguel',
+          water: 'Água',
+          electricity: 'Luz',
+          internet: 'Internet',
+          food: 'Comida',
+          fuel: 'Gasolina',
+          creditCard: 'Cartão de Crédito'
+        };
+        keys.forEach(key => {
+          const val = expenses[key] || 0;
+          total += val;
+          const tr = document.createElement('tr');
+          const tdLabel = document.createElement('td');
+          tdLabel.textContent = labels[key] || key;
+          const tdVal = document.createElement('td');
+          tdVal.textContent = formatBRL(val);
+          tr.appendChild(tdLabel);
+          tr.appendChild(tdVal);
+          tableBody.appendChild(tr);
+        });
+        monthTotalElem.textContent = formatBRL(total);
+
+        // Atualizar os inputs do formulário para o mês carregado e recalcule a visualização (sem salvar para não sobrescrever)
+        setInputsFromExpenses(monthData);
+      } else {
+        // Sem dados para o mês
+        monthTotalElem.textContent = formatBRL(0);
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.setAttribute('colspan', '2');
+        td.style.textAlign = 'center';
+        td.style.color = '#ccc';
+        td.textContent = 'Nenhum dado salvo para este mês.';
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+        clearInputsExpenses();
+      }
+    }
+
+    // Preenche os inputs com os dados do mês selecionado, incluindo renda e meta financeira, sem salvar novamente
+    function setInputsFromExpenses(monthData) {
+      // Set valores gastos
+      const expenses = monthData.expenses || {};
+      document.getElementById('rentInput').value = expenses.rent || '';
+      document.getElementById('waterInput').value = expenses.water || '';
+      document.getElementById('electricityInput').value = expenses.electricity || '';
+      document.getElementById('internetInput').value = expenses.internet || '';
+      document.getElementById('foodInput').value = expenses.food || '';
+      document.getElementById('fuelInput').value = expenses.fuel || '';
+      document.getElementById('creditCardInput').value = expenses.creditCard || '';
+      // Set renda e meta financeira
+      document.getElementById('incomeInput').value = monthData.income || '';
+      document.getElementById('goalAmountInput').value = monthData.goalAmount || '';
+      document.getElementById('goalMonthsInput').value = monthData.goalMonths || '';
+      updateCalculations(false);
+    }
+
+    // Limpar inputs de gastos para meses sem dados
+    function clearInputsExpenses() {
+      ['rentInput','waterInput','electricityInput','internetInput','foodInput','fuelInput','creditCardInput'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('incomeInput').value = '';
+      document.getElementById('goalAmountInput').value = '';
+      document.getElementById('goalMonthsInput').value = '';
+      updateCalculations(false);
+    }
+
+    // Controle das abas
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Ativa tab clicada e desativa outras
+        tabs.forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        // Exibe conteúdo correspondente e oculta outros
+        const targetId = tab.getAttribute('aria-controls');
+        tabContents.forEach(tc => {
+          if (tc.id === targetId) {
+            tc.classList.add('active');
+            tc.focus();
+          } else {
+            tc.classList.remove('active');
+          }
+        });
+
+        // Ao entrar na aba mensais, carrega o mês corrente inicialmente
+        if (targetId === 'monthlyViewSection') {
+          const select = document.getElementById('selectMonth');
+          loadMonthlyData(2025, parseInt(select.value, 10));
+        }
+      });
+    });
+
+    // Evento para mudanças em inputs que afetam cálculos
+    const inputIds = [
+      'incomeInput', 'rentInput', 'waterInput', 'electricityInput',
+      'internetInput', 'foodInput', 'fuelInput', 'creditCardInput',
+      'goalAmountInput', 'goalMonthsInput'
+    ];
+    inputIds.forEach(id => {
+      document.getElementById(id).addEventListener('input', () => updateCalculations(true));
+    });
+
+    // Evento para mudança do mês selecionado na visualização mensal
+    document.getElementById('selectMonth').addEventListener('change', (e) => {
+      const month = parseInt(e.target.value, 10);
+      loadMonthlyData(2025, month);
+    });
+
+    // Inicialização da página com cálculo atualizado
+    window.addEventListener('DOMContentLoaded', () => {
+      updateCalculations(true);
+    });
+  </script>
+</body>
+</html>
+</content>
+</create_file>
+

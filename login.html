@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login - Calculadora Financeira</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+  }
+  .login-container {
+    background: rgba(42, 42, 114, 0.9);
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .login-container h1 {
+    margin-bottom: 24px;
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: 1px;
+  }
+  .input-group {
+    margin-bottom: 18px;
+    text-align: left;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: none;
+  }
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1.1rem;
+    outline: none;
+    font-weight: 500;
+    transition: box-shadow 0.3s ease;
+  }
+  input[type="text"]:focus,
+  input[type="password"]:focus {
+    box-shadow: 0 0 12px #7b68ee;
+  }
+  button {
+    background-color: #764ba2;
+    border: none;
+    padding: 14px 0;
+    width: 100%;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    cursor: pointer;
+    letter-spacing: 1.2px;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+  }
+  button:hover {
+    background-color: #5a357a;
+  }
+  .message {
+    margin-top: 14px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .success-message {
+    color: #9ae68a;
+  }
+  .error-message {
+    color: #ef5656;
+  }
+</style>
+</head>
+<body>
+  <div class="login-container" role="main" aria-label="Login para acesso à calculadora financeira">
+    <h1 id="formTitle">Login</h1>
+    
+    <form id="loginForm" novalidate>
+      <div class="input-group">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" name="username" autocomplete="username" required aria-required="true" placeholder="Digite seu usuário" />
+      </div>
+      <div class="input-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required aria-required="true" placeholder="Digite sua senha" />
+      </div>
+      <button type="submit" aria-label="Entrar">Entrar</button>
+      <div class="message" id="loginMessage"></div>
+    </form>
+
+    <form id="registerForm" novalidate style="display: none;">
+      <div class="input-group">
+        <label for="newUsername">Novo Usuário</label>
+        <input type="text" id="newUsername" name="newUsername" required placeholder="Digite seu novo usuário" />
+      </div>
+      <div class="input-group">
+        <label for="newPassword">Nova Senha</label>
+        <input type="password" id="newPassword" name="
